@@ -15,7 +15,7 @@ import {
     RequestManagerInfo,
 } from 'paperback-extensions-common'
 
-import { Parser } from './parser'
+import { Parser } from './QiXiMHParser'
 
 const QX_DOMAIN = 'http://www.qiximh1.com'
 
@@ -25,19 +25,14 @@ export const QiXiMHInfo: SourceInfo = {
     description: 'Extension for QiXiMH',
     author: 'woimoyu',
     authorWebsite: 'http://github.com/woimoyu/',
-    icon: 'icon.ico',
+    icon: 'icon.png',
     contentRating: ContentRating.EVERYONE,
     websiteBaseURL: QX_DOMAIN,
     sourceTags: [
         {
             text: 'Chinese',
             type: TagType.GREY,
-        },
-        {
-            text: 'Cloudflare',
-            type: TagType.RED
-        },
-    ],
+        }],
 }
 
 const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.124 Safari/537.36 Edg/102.0.1245.44'
@@ -81,7 +76,6 @@ export class QiXiMH extends Source {
             method: 'GET',
         })
         const response = await this.requestManager.schedule(request, this.RETRY)
-        this.CloudFlareError(response.status)
         const $ = this.cheerio.load(response.data ?? response['fixedData'])
         return this.parser.parseMangaDetails($, mangaId)
     }
@@ -93,7 +87,6 @@ export class QiXiMH extends Source {
         })
 
         const response = await this.requestManager.schedule(request, this.RETRY)
-        this.CloudFlareError(response.status)
         const $ = this.cheerio.load(response.data ?? response['fixedData'])
         return this.parser.parseChapters($, mangaId, this)
     }
@@ -105,7 +98,6 @@ export class QiXiMH extends Source {
         })
 
         const response = await this.requestManager.schedule(request, this.RETRY)
-        this.CloudFlareError(response.status)
         const $ = this.cheerio.load(response.data ?? response['fixedData'])
         return this.parser.parseChapterDetails($, mangaId, chapterId)
     }
@@ -123,7 +115,6 @@ export class QiXiMH extends Source {
         })
 
         const data = await this.requestManager.schedule(request, this.RETRY)
-        this.CloudFlareError(data.status)
         const $ = this.cheerio.load(data.data)
         const manga = this.parser.parseSearchResults($)
 
@@ -142,9 +133,7 @@ export class QiXiMH extends Source {
             method: 'GET',
         })
         const response = await this.requestManager.schedule(request, this.RETRY)
-        this.CloudFlareError(response.status)
         const $ = this.cheerio.load(response.data ?? response['fixedData'])
-
         this.parser.parseHomeSections($, sectionCallback)
     }
 
@@ -160,7 +149,6 @@ export class QiXiMH extends Source {
         })
 
         const response = await this.requestManager.schedule(request, this.RETRY)
-        this.CloudFlareError(response.status)
         const $ = this.cheerio.load(response.data ?? response['fixedData'])
         const manga: MangaTile[] = this.parser.parseViewMore($)
 
@@ -194,23 +182,6 @@ export class QiXiMH extends Source {
         }
 
         return time
-    }
-
-    override getCloudflareBypassRequest(): Request {
-        return createRequestObject({
-            url: this.baseUrl,
-            method: 'GET',
-            headers: {
-                'user-agent': userAgent,
-                'referer': `${this.baseUrl}/`
-            }
-        })
-    }
-
-    CloudFlareError(status: any) {
-        if (status == 503) {
-            throw new Error('CLOUDFLARE BYPASS ERROR:\nPlease go to Settings > Sources > <The name of this source> and press Cloudflare Bypass')
-        }
     }
 }
 

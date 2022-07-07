@@ -134,68 +134,73 @@ export class Parser {
     }
 
     parseHomeSections($: any, sectionCallback: (section: HomeSection) => void): void {
-        const section1 = createHomeSection({ id: '1', title: 'Popular', type: HomeSectionType.featured, })
-        const section2 = createHomeSection({ id: '2', title: 'Latest', type: HomeSectionType.singleRowNormal, view_more: true, })
-        const section3 = createHomeSection({ id: '3', title: 'Popular Titles', type: HomeSectionType.singleRowNormal, view_more: true, })
+        const section1 = createHomeSection({ id: '1', title: '今日热读', type: HomeSectionType.singleRowNormal, view_more: false, })
+        const section2 = createHomeSection({ id: '2', title: '新番漫画', type: HomeSectionType.singleRowNormal, view_more: true, })
+        const section3 = createHomeSection({ id: '3', title: '最近更新', type: HomeSectionType.singleRowNormal, view_more: true, })
 
-        const featured: MangaTile[] = []
-        const popular: MangaTile[] = []
-        const latest: MangaTile[] = []
+        const daily: MangaTile[] = []
+        const newManhua: MangaTile[] = []
+        const recentlyUpdate: MangaTile[] = []
 
-        const arrFeatured = $('.desktop-slide').toArray()
-        const arrPopular = $('.pop-list-desktop .bsx').toArray()
-        const arrLatest = $('.latest-updates .bsx').toArray()
+        const cy_wide_list = $('div.cy_wide_list').toArray()
 
-        for (const obj of arrFeatured) {
-            const id = $(obj).attr('href')?.replace('https://flamescans.org/series/', '').replace('/', '') ?? ''
-            const title = $('.tt', obj).text().trim()
-            const strImg = $('.bigbanner', obj).attr('style') ?? ''
-            const image = strImg.substring(23, strImg.length - 3) ?? ''
-            featured.push(
+        const arrDaily = $(cy_wide_list[0]).find('li > a').toArray()
+        const arrNewManhua = $(cy_wide_list[1]).find('li > a').toArray()
+        const arrRecentlyUpdate = $(cy_wide_list[2]).find('li > a').toArray()
+
+        for (const obj of arrDaily) {
+            const id = $(obj).attr('href').replace('/', '')
+            const image = $(obj).find('img').attr('src')
+            const title = $(obj).find('img').attr('alt')
+            console.log(">>>>>>>>")
+            console.log(id)
+            console.log(image)
+            console.log(title)
+            daily.push(
                 createMangaTile({
                     id,
                     image,
-                    title: createIconText({ text: this.encodeText(title) }),
+                    title: createIconText({ text: title })
                 })
             )
         }
-        section1.items = featured
+
+        section1.items = daily
         sectionCallback(section1)
 
 
-        for (const item of arrLatest) {
-            const id = $('a', item).attr('href')?.replace('https://flamescans.org/series/', '').replace('/', '') ?? ''
-            const title = $('a', item).attr('title') ?? ''
-            const image = $('img', item).attr('src') ?? ''
-            latest.push(
+        for (const obj of arrNewManhua) {
+            const id = $(obj).attr('href').replace('/', '')
+            const image = $(obj).find('img').attr('src')
+            const title = $(obj).find('img').attr('alt')
+            newManhua.push(
                 createMangaTile({
                     id,
                     image,
-                    title: createIconText({ text: this.encodeText(title) }),
+                    title: createIconText({ text: title })
                 })
             )
         }
-
-        section2.items = latest
+        section2.items = newManhua
         sectionCallback(section2)
 
-        for (const obj of arrPopular) {
-            const id = $('a', obj).attr('href')?.replace('https://flamescans.org/series/', '').replace('/', '') ?? ''
-            const title = $('a', obj).attr('title') ?? ''
-            const subText = $('.status', obj).text() ?? ''
-            const image = $('img', obj).attr('src') ?? ''
-            popular.push(
+        for (const obj of arrRecentlyUpdate) {
+            const id = $(obj).attr('href').replace('/', '')
+            const image = $(obj).find('img').attr('src')
+            const title = $(obj).find('img').attr('alt')
+            recentlyUpdate.push(
                 createMangaTile({
                     id,
                     image,
-                    title: createIconText({ text: this.encodeText(title) }),
-                    subtitleText: createIconText({ text: subText }),
+                    title: createIconText({ text: title })
                 })
             )
         }
-        section3.items = popular
+        section3.items = recentlyUpdate
         sectionCallback(section3)
     }
+
+
 
     encodeText(str: string) {
         return str.replace(/&#([0-9]{1,4});/gi, function (_, numStr) {

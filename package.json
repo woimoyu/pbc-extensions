@@ -14,6 +14,9 @@
   "author": "woimoyu",
   "license": "ISC",
   "devDependencies": {
+    "@types/chai": "^4.3.1",
+    "@types/chai-as-promised": "^7.1.5",
+    "@types/jest": "^28.1.4",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
     "eslint": "^7.27.0",
@@ -22,6 +25,6 @@
   },
   "dependencies": {
     "paperback-cli": "^2.0.0-alpha.13",
-    "paperback-extensions-common": "^5.0.0-alpha.5"
+    "paperback-extensions-common": "^4.3.5"
   }
 }
