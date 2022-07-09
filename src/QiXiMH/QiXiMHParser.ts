@@ -16,9 +16,6 @@ export class Parser {
         const title = $('div.cy_title').text() ?? ''
         const image = $('div.cy_info_cover').find('img').attr('src') ?? ''
 
-        console.log("<><><>")
-        console.log(image)
-
         const desc = $('p#comic-description').text().trim() ?? ''
         const rating = '0'
         let status = MangaStatus.UNKNOWN, author = '', artist = ''
@@ -42,7 +39,7 @@ export class Parser {
 
         return createManga({
             id: mangaId,
-            titles: [this.encodeText(title)],
+            titles: title,
             image,
             rating: Number(rating) ?? 0,
             status,
@@ -164,10 +161,6 @@ export class Parser {
             const id = $(obj).attr('href').replace('/', '')
             const image = $(obj).find('img').attr('src')
             const title = $(obj).find('img').attr('alt')
-            console.log(">>>>>>>>")
-            console.log(id)
-            console.log(image)
-            console.log(title)
             daily.push(
                 createMangaTile({
                     id,

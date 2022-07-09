@@ -21,7 +21,7 @@ const QX_DOMAIN = 'http://www.qiximh1.com'
 
 export const QiXiMHInfo: SourceInfo = {
     version: '0.0.0',
-    name: 'QiXiMH',
+    name: '七夕漫画',
     description: 'Extension for QiXiMH',
     author: 'woimoyu',
     authorWebsite: 'http://github.com/woimoyu/',
@@ -77,9 +77,6 @@ export class QiXiMH extends Source {
         })
         const response = await this.requestManager.schedule(request, this.RETRY)
         const $ = this.cheerio.load(response.data ?? response['fixedData'])
-        console.log(">><<")
-        console.log(`${this.baseUrl}/${mangaId}`)
-
         return this.parser.parseMangaDetails($, mangaId)
     }
 
@@ -132,7 +129,6 @@ export class QiXiMH extends Source {
         let page = metadata?.page ?? 1
         if (page == -1) return createPagedResults({ results: [], metadata: { page: -1 } })
 
-        // const param = `/page/${page}/?s=${(query.title ?? '').replace(/\s/g, '+')}`
         // http://www.qiximh1.com/search.php?keyword=1+2
         const param = encodeURI(`?keyword=${(query.title ?? '').replace(/\s/g, '+')}`)
         console.log(">pp")
@@ -144,13 +140,6 @@ export class QiXiMH extends Source {
             method: 'GET',
         })
 
-
-        // const request = createRequestObject({
-        //     url: `${this.baseUrl}`,
-        //     method: 'GET',
-        //     param,
-        // })
-
         const data = await this.requestManager.schedule(request, this.RETRY)
         const $ = this.cheerio.load(data.data)
         const manga = this.parser.parseSearchResults($)
@@ -161,6 +150,7 @@ export class QiXiMH extends Source {
 
         // page++
         // if (manga.length < 10) page = -1
+        //qiximh1 only return 1page of 27 manhua at most, will update this part after qiximh1 change its behavior
 
         return createPagedResults({
             results: manga,
@@ -200,29 +190,6 @@ export class QiXiMH extends Source {
             results: manga,
             metadata: { page: page },
         })
-    }
-
-    /**
-     * Parses a time string from a Madara source into a Date object.
-     * Copied from Madara.ts made by gamefuzzy
-     */
-    protected convertTime(timeAgo: string): Date {
-        let time: Date
-        let trimmed = Number((/\d*/.exec(timeAgo) ?? [])[0])
-        trimmed = trimmed == 0 && timeAgo.includes('a') ? 1 : trimmed
-        if (timeAgo.includes('mins') || timeAgo.includes('minutes') || timeAgo.includes('minute')) {
-            time = new Date(Date.now() - trimmed * 60000)
-        } else if (timeAgo.includes('hours') || timeAgo.includes('hour')) {
-            time = new Date(Date.now() - trimmed * 3600000)
-        } else if (timeAgo.includes('days') || timeAgo.includes('day')) {
-            time = new Date(Date.now() - trimmed * 86400000)
-        } else if (timeAgo.includes('year') || timeAgo.includes('years')) {
-            time = new Date(Date.now() - trimmed * 31556952000)
-        } else {
-            time = new Date(timeAgo)
-        }
-
-        return time
     }
 }
 
