@@ -13,10 +13,14 @@ import {
 
 export class Parser {
     parseMangaDetails($: any, mangaId: string): Manga {
-        const title = $('.thumb img').attr('alt') ?? ''
-        const image = $('.thumb img').attr('src') ?? ''
-        const desc = $('.entry-content.entry-content-single').text().trim() ?? ''
-        const rating = Number($('div.extra-info div.mobile-rt div.numscore').html() ?? '0')
+        const title = $('div.cy_title').text() ?? ''
+        const image = $('div.cy_info_cover').find('img').attr('src') ?? ''
+
+        console.log("<><><>")
+        console.log(image)
+
+        const desc = $('p#comic-description').text().trim() ?? ''
+        const rating = '0'
         let status = MangaStatus.UNKNOWN, author = '', artist = ''
 
         for (const obj of $('.left-side .imptdt').toArray()) {
@@ -50,33 +54,47 @@ export class Parser {
     }
 
     mangaStatus(str: string) {
-        if (str.includes('ongoing')) return MangaStatus.ONGOING
-        if (str.includes('complete')) return MangaStatus.COMPLETED
+        if (str.includes('连载')) return MangaStatus.ONGOING
+        if (str.includes('完结')) return MangaStatus.COMPLETED
         if (str.includes('haitus')) return MangaStatus.HIATUS
         if (str.includes('cancelled')) return MangaStatus.ABANDONED
         if (str.includes('coming')) return MangaStatus.ONGOING
         return MangaStatus.ONGOING
     }
 
-    parseChapters($: any, mangaId: string, source: any): Chapter[] {
+    parseChapters($: any, apiData: JSON, mangaId: string, source: any): Chapter[] {
         const chapters: Chapter[] = []
-        const arrChapters = $('#chapterlist li').toArray().reverse()
-        for (const item of arrChapters) {
-            const id = $('a', item).attr('href') ?? ''
-            const chapNum = Number($(item).attr('data-num') ?? '0')
 
-            const time = source.convertTime($('.chapterdate', item).text().trim())
+        const arrChaptersHttp = $('ul#mh-chapter-list-ol-0 > li > a').toArray()
+
+        for (const chapter of arrChaptersHttp) {
+            const id = $(chapter).attr('href') ?? ''
+            const chapterName = $(chapter).text()
+            
             chapters.push(
                 createChapter({
                     id,
                     mangaId,
-                    name: `Chapter ${chapNum.toString()}`,
-                    chapNum,
-                    time,
-                    langCode: LanguageCode.ENGLISH,
+                    name: chapterName,
+                    chapNum: Number(chapterName.replace(/\D/g, '') ?? 0),
+                    langCode: LanguageCode.CHINEESE,
                 })
             )
         }
+
+        Object.values(apiData).forEach(chapterInfo => {
+            const chapterName = chapterInfo["chaptername"]
+            chapters.push(
+                createChapter({
+                    id: `/${mangaId}${chapterInfo["chapterid"]}.html`,
+                    mangaId,
+                    name: chapterName,
+                    chapNum: Number(chapterName.replace(/\D/g, '') ?? 0),
+                    langCode: LanguageCode.CHINEESE
+                })
+            )
+        })
+
         return chapters
     }
 

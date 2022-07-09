@@ -77,23 +77,42 @@ export class QiXiMH extends Source {
         })
         const response = await this.requestManager.schedule(request, this.RETRY)
         const $ = this.cheerio.load(response.data ?? response['fixedData'])
+        console.log(">><<")
+        console.log(`${this.baseUrl}/${mangaId}`)
+
         return this.parser.parseMangaDetails($, mangaId)
     }
 
     async getChapters(mangaId: string): Promise<Chapter[]> {
-        const request = createRequestObject({
+        const requestHttp = createRequestObject({
             url: `${this.baseUrl}/${mangaId}`,
             method: 'GET',
         })
 
-        const response = await this.requestManager.schedule(request, this.RETRY)
-        const $ = this.cheerio.load(response.data ?? response['fixedData'])
-        return this.parser.parseChapters($, mangaId, this)
+        const requestAPI = createRequestObject({
+            url: `${this.baseUrl}/bookchapter/`,
+            method: 'POST',
+            data: "id="+mangaId.replace('/','')+"&id2=1"
+        })
+
+        const responseHTTP = await this.requestManager.schedule(requestHttp, this.RETRY)
+        const responseAPI = await this.requestManager.schedule(requestAPI, this.RETRY)
+
+        let apiData
+        try {
+             apiData = JSON.parse(responseAPI.data)
+        }
+        catch (e) {
+            throw new Error(`${e}`);
+        }
+
+        const $ = this.cheerio.load(responseHTTP.data ?? responseHTTP['fixedData'])
+        return this.parser.parseChapters($, apiData, mangaId, this)
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
         const request = createRequestObject({
-            url: chapterId,
+            url: `${this.baseUrl}chapterId`,
             method: 'GET',
         })
 
@@ -192,3 +211,6 @@ export interface QXResponse extends Response {
 export interface QXRequestManager extends RequestManagerInfo {
     schedule: (request: Request, retryCount: number) => Promise<QXResponse>;
 }
+
+
+//special thanks to Netsky and xOnlyFadi and author of Qiximh.kt from tachiyomi-extensions
