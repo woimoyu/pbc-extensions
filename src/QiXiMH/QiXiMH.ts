@@ -108,10 +108,6 @@ export class QiXiMH extends Source {
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        
-        console.log(">>CC")
-        console.log(`${this.baseUrl}${chapterId}`)
-
         const request = createRequestObject({
             url: `${this.baseUrl}${chapterId}`,
             method: 'GET',
@@ -119,8 +115,6 @@ export class QiXiMH extends Source {
 
         const response = await this.requestManager.schedule(request, this.RETRY)
         const $ = this.cheerio.load(response.data ?? response['fixedData'])
-        console.log('>>CCC')
-        console.log($('script').length)
         return this.parser.parseChapterDetails($, mangaId, chapterId)
     }
 
@@ -131,9 +125,6 @@ export class QiXiMH extends Source {
 
         // http://www.qiximh1.com/search.php?keyword=1+2
         const param = encodeURI(`?keyword=${(query.title ?? '').replace(/\s/g, '+')}`)
-        console.log(">pp")
-        console.log(param)
-
         const request = createRequestObject({
             url: `${this.baseUrl}/search.php`,
             param,
@@ -143,11 +134,6 @@ export class QiXiMH extends Source {
         const data = await this.requestManager.schedule(request, this.RETRY)
         const $ = this.cheerio.load(data.data)
         const manga = this.parser.parseSearchResults($)
-
-        console.log(">pp1")
-        console.log(data)
-
-
         // page++
         // if (manga.length < 10) page = -1
         //qiximh1 only return 1page of 27 manhua at most, will update this part after qiximh1 change its behavior

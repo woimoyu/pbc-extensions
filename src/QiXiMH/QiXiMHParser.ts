@@ -7,56 +7,35 @@ import {
     Manga,
     MangaStatus,
     MangaTile,
-    Tag,
-    TagSection,
 } from 'paperback-extensions-common'
 
 export class Parser {
     parseMangaDetails($: any, mangaId: string): Manga {
-        const title = $('div.cy_title').text() ?? ''
+        const title = $('div.cy_title').text().trim() ?? ''
         const image = $('div.cy_info_cover').find('img').attr('src') ?? ''
-
         const desc = $('p#comic-description').text().trim() ?? ''
-        const rating = '0'
-        let status = MangaStatus.UNKNOWN, author = '', artist = ''
+        
+        let tempInfo = $('.cy_xinxi').toArray()
+        tempInfo = $('span', tempInfo[0])
 
-        for (const obj of $('.left-side .imptdt').toArray()) {
-            const item = $('i', obj).text().trim()
-            const type = $('h1', obj).text().trim()
-            if (type.toLowerCase().includes('status')) status = this.mangaStatus(item.toLowerCase())
-            else if (type.toLowerCase().includes('author')) author = item
-            else if (type.toLowerCase().includes('artist')) artist = item
-        }
+        let artist = $(tempInfo[0]).text().replace('作者：', '').trim()
 
-        const arrayTags: Tag[] = []
-        for (const obj of $('.mgen a').toArray()) {
-            const id = $(obj).attr('href')?.replace('https://flamescans.org/genres/', '').replace('/', '') ?? ''
-            const label = $(obj).text().trim()
-            if (!id || !label) continue
-            arrayTags.push({ id: id, label: label })
-        }
-        const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map((x) => createTag(x)) })]
+        let status = this.mangaStatus($(tempInfo[1]).text())
 
         return createManga({
             id: mangaId,
-            titles: title,
+            titles: [title],
             image,
-            rating: Number(rating) ?? 0,
             status,
             artist,
-            author,
-            tags: tagSections,
-            desc: this.encodeText(desc),
+            desc,
         })
     }
 
     mangaStatus(str: string) {
         if (str.includes('连载')) return MangaStatus.ONGOING
         if (str.includes('完结')) return MangaStatus.COMPLETED
-        if (str.includes('haitus')) return MangaStatus.HIATUS
-        if (str.includes('cancelled')) return MangaStatus.ABANDONED
-        if (str.includes('coming')) return MangaStatus.ONGOING
-        return MangaStatus.ONGOING
+        return MangaStatus.UNKNOWN
     }
 
     parseChapters($: any, apiData: JSON, mangaId: string, source: any): Chapter[] {
@@ -73,7 +52,7 @@ export class Parser {
                     id,
                     mangaId,
                     name: chapterName,
-                    chapNum: Number(chapterName.replace(/\D/g, '') ?? 0),
+                    chapNum: 0,
                     langCode: LanguageCode.CHINEESE,
                 })
             )
@@ -86,7 +65,7 @@ export class Parser {
                     id: `/${mangaId}${chapterInfo["chapterid"]}.html`,
                     mangaId,
                     name: chapterName,
-                    chapNum: Number(chapterName.replace(/\D/g, '') ?? 0),
+                    chapNum: 0,
                     langCode: LanguageCode.CHINEESE
                 })
             )
@@ -112,13 +91,13 @@ export class Parser {
 
         for (const item of $('div.cy_list_mh > ul > li > a.pic').toArray()) {
             const id = $(item).attr('href').replace('/', '') ?? ''
-            const title = $(item).find('img').attr('alt').slice(0, -2) ?? ''
+            const title = $(item).find('img').attr('alt').slice(0, -2).trim() ?? ''
             const image = $(item).find('img').attr('src') ?? ''
             results.push(
                 createMangaTile({
                     id,
                     image,
-                    title: createIconText({ text: this.encodeText(title) }),
+                    title: createIconText({ text: title }),
                 })
             )
         }
@@ -129,13 +108,13 @@ export class Parser {
         const more: MangaTile[] = []
         for (const item of $('.listupd .bsx').toArray()) {
             const id = $('a', item).attr('href')?.replace('https://flamescans.org/series/', '').replace('/', '') ?? ''
-            const title = $('a', item).attr('title') ?? ''
+            const title = $('a', item).attr('title').trim() ?? ''
             const image = $('img', item).attr('src') ?? ''
             more.push(
                 createMangaTile({
                     id,
                     image,
-                    title: createIconText({ text: this.encodeText(title) }),
+                    title: createIconText({ text: title }),
                 })
             )
         }
@@ -160,7 +139,7 @@ export class Parser {
         for (const obj of arrDaily) {
             const id = $(obj).attr('href').replace('/', '')
             const image = $(obj).find('img').attr('src')
-            const title = $(obj).find('img').attr('alt')
+            const title = $(obj).find('img').attr('alt').trim()
             daily.push(
                 createMangaTile({
                     id,
@@ -177,7 +156,7 @@ export class Parser {
         for (const obj of arrNewManhua) {
             const id = $(obj).attr('href').replace('/', '')
             const image = $(obj).find('img').attr('src')
-            const title = $(obj).find('img').attr('alt')
+            const title = $(obj).find('img').attr('alt').trim()
             newManhua.push(
                 createMangaTile({
                     id,
@@ -192,7 +171,7 @@ export class Parser {
         for (const obj of arrRecentlyUpdate) {
             const id = $(obj).attr('href').replace('/', '')
             const image = $(obj).find('img').attr('src')
-            const title = $(obj).find('img').attr('alt')
+            const title = $(obj).find('img').attr('alt').trim()
             recentlyUpdate.push(
                 createMangaTile({
                     id,
@@ -203,14 +182,5 @@ export class Parser {
         }
         section3.items = recentlyUpdate
         sectionCallback(section3)
-    }
-
-
-
-    encodeText(str: string) {
-        return str.replace(/&#([0-9]{1,4});/gi, function (_, numStr) {
-            var num = parseInt(numStr, 10)
-            return String.fromCharCode(num)
-        })
     }
 }
