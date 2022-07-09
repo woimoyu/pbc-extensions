@@ -99,30 +99,24 @@ export class Parser {
     }
 
     parseChapterDetails($: any, mangaId: string, id: string): ChapterDetails {
-        const pages: string[] = []
-
-        const chapterList = $('#readerarea p img').toArray()
-        for (const obj of chapterList) {
-            const imageUrl = $(obj).attr('src')
-            if (!imageUrl) continue
-            pages.push(imageUrl.trim())
-        }
-
+        var pages = eval($('script')[3].children[0].data.replace("eval", ''))
+        pages = pages.replace('var newImgs=', '').replaceAll('"', '').replace(/^\[|\]$/g, "").split(",")    
         return createChapterDetails({
             id,
             mangaId,
             pages,
             longStrip: true,
         })
+
     }
 
     parseSearchResults($: any): MangaTile[] {
         const results: MangaTile[] = []
 
-        for (const item of $('.listupd .bsx').toArray()) {
-            const id = $('a', item).attr('href')?.replace('https://flamescans.org/series/', '').replace('/', '') ?? ''
-            const title = $('a', item).attr('title') ?? ''
-            const image = $('img', item).attr('src') ?? ''
+        for (const item of $('div.cy_list_mh > ul > li > a.pic').toArray()) {
+            const id = $(item).attr('href').replace('/', '') ?? ''
+            const title = $(item).find('img').attr('alt').slice(0, -2) ?? ''
+            const image = $(item).find('img').attr('src') ?? ''
             results.push(
                 createMangaTile({
                     id,

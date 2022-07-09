@@ -133,3 +133,4 @@ dist
 .pnp.*
 src/parse.js
 src/parseJson.js
+src/temp.js

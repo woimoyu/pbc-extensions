@@ -111,13 +111,19 @@ export class QiXiMH extends Source {
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
+        
+        console.log(">>CC")
+        console.log(`${this.baseUrl}${chapterId}`)
+
         const request = createRequestObject({
-            url: `${this.baseUrl}chapterId`,
+            url: `${this.baseUrl}${chapterId}`,
             method: 'GET',
         })
 
         const response = await this.requestManager.schedule(request, this.RETRY)
         const $ = this.cheerio.load(response.data ?? response['fixedData'])
+        console.log('>>CCC')
+        console.log($('script').length)
         return this.parser.parseChapterDetails($, mangaId, chapterId)
     }
 
@@ -126,23 +132,39 @@ export class QiXiMH extends Source {
         let page = metadata?.page ?? 1
         if (page == -1) return createPagedResults({ results: [], metadata: { page: -1 } })
 
-        const param = `/page/${page}/?s=${(query.title ?? '').replace(/\s/g, '+')}`
+        // const param = `/page/${page}/?s=${(query.title ?? '').replace(/\s/g, '+')}`
+        // http://www.qiximh1.com/search.php?keyword=1+2
+        const param = encodeURI(`?keyword=${(query.title ?? '').replace(/\s/g, '+')}`)
+        console.log(">pp")
+        console.log(param)
+
         const request = createRequestObject({
-            url: `${this.baseUrl}`,
-            method: 'GET',
+            url: `${this.baseUrl}/search.php`,
             param,
+            method: 'GET',
         })
+
+
+        // const request = createRequestObject({
+        //     url: `${this.baseUrl}`,
+        //     method: 'GET',
+        //     param,
+        // })
 
         const data = await this.requestManager.schedule(request, this.RETRY)
         const $ = this.cheerio.load(data.data)
         const manga = this.parser.parseSearchResults($)
 
-        page++
-        if (manga.length < 10) page = -1
+        console.log(">pp1")
+        console.log(data)
+
+
+        // page++
+        // if (manga.length < 10) page = -1
 
         return createPagedResults({
             results: manga,
-            metadata: { page: page },
+            metadata: { page: -1 },
         })
     }
 
