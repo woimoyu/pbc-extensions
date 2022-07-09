@@ -83,7 +83,6 @@ export class Parser {
             pages,
             longStrip: true,
         })
-
     }
 
     parseSearchResults($: any): MangaTile[] {
@@ -104,31 +103,27 @@ export class Parser {
         return results
     }
 
-    parseViewMore($: any): MangaTile[] {
-        const more: MangaTile[] = []
-        for (const item of $('.listupd .bsx').toArray()) {
-            const id = $('a', item).attr('href')?.replace('https://flamescans.org/series/', '').replace('/', '') ?? ''
-            const title = $('a', item).attr('title').trim() ?? ''
-            const image = $('img', item).attr('src') ?? ''
-            more.push(
-                createMangaTile({
-                    id,
-                    image,
-                    title: createIconText({ text: title }),
-                })
-            )
-        }
-        return more
-    }
+    // parseViewMore($: any): MangaTile[] {
+    //     const more: MangaTile[] = []
+    //     for (const item of $('.listupd .bsx').toArray()) {
+    //         const id = $('a', item).attr('href')?.replace('https://flamescans.org/series/', '').replace('/', '') ?? ''
+    //         const title = $('a', item).attr('title').trim() ?? ''
+    //         const image = $('img', item).attr('src') ?? ''
+    //         more.push(
+    //             createMangaTile({
+    //                 id,
+    //                 image,
+    //                 title: createIconText({ text: title }),
+    //             })
+    //         )
+    //     }
+    //     return more
+    // }
 
     parseHomeSections($: any, sectionCallback: (section: HomeSection) => void): void {
-        const section1 = createHomeSection({ id: '1', title: '今日热读', type: HomeSectionType.singleRowNormal, view_more: false, })
-        const section2 = createHomeSection({ id: '2', title: '新番漫画', type: HomeSectionType.singleRowNormal, view_more: true, })
-        const section3 = createHomeSection({ id: '3', title: '最近更新', type: HomeSectionType.singleRowNormal, view_more: true, })
-
-        const daily: MangaTile[] = []
-        const newManhua: MangaTile[] = []
-        const recentlyUpdate: MangaTile[] = []
+        const section1 = createHomeSection({ id: '1', title: '今日热读', type: HomeSectionType.singleRowNormal, view_more: false})
+        const section2 = createHomeSection({ id: '2', title: '新番漫画', type: HomeSectionType.singleRowNormal, view_more: false})
+        const section3 = createHomeSection({ id: '3', title: '最近更新', type: HomeSectionType.singleRowNormal, view_more: false})
 
         const cy_wide_list = $('div.cy_wide_list').toArray()
 
@@ -136,51 +131,30 @@ export class Parser {
         const arrNewManhua = $(cy_wide_list[1]).find('li > a').toArray()
         const arrRecentlyUpdate = $(cy_wide_list[2]).find('li > a').toArray()
 
-        for (const obj of arrDaily) {
-            const id = $(obj).attr('href').replace('/', '')
-            const image = $(obj).find('img').attr('src')
-            const title = $(obj).find('img').attr('alt').trim()
-            daily.push(
-                createMangaTile({
-                    id,
-                    image,
-                    title: createIconText({ text: title })
-                })
-            )
-        }
-
-        section1.items = daily
+        section1.items = this.handleHomeSection($, arrDaily)
         sectionCallback(section1)
-
-
-        for (const obj of arrNewManhua) {
-            const id = $(obj).attr('href').replace('/', '')
-            const image = $(obj).find('img').attr('src')
-            const title = $(obj).find('img').attr('alt').trim()
-            newManhua.push(
-                createMangaTile({
-                    id,
-                    image,
-                    title: createIconText({ text: title })
-                })
-            )
-        }
-        section2.items = newManhua
+        
+        section2.items = this.handleHomeSection($, arrNewManhua)
         sectionCallback(section2)
 
-        for (const obj of arrRecentlyUpdate) {
+        section3.items = this.handleHomeSection($, arrRecentlyUpdate)
+        sectionCallback(section3)
+    }
+
+    handleHomeSection($: any, sectionFrom: any){
+        const sectionTo: MangaTile[] = []
+        for (const obj of sectionFrom) {
             const id = $(obj).attr('href').replace('/', '')
             const image = $(obj).find('img').attr('src')
             const title = $(obj).find('img').attr('alt').trim()
-            recentlyUpdate.push(
+            sectionTo.push(
                 createMangaTile({
                     id,
                     image,
-                    title: createIconText({ text: title })
+                    title: createIconText({text: title})
                 })
             )
         }
-        section3.items = recentlyUpdate
-        sectionCallback(section3)
+        return sectionTo
     }
 }

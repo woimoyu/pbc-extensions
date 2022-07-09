@@ -4,7 +4,7 @@ import {
     ContentRating,
     HomeSection,
     Manga,
-    MangaTile,
+    // MangaTile,
     PagedResults,
     SearchRequest,
     Request,
@@ -154,29 +154,29 @@ export class QiXiMH extends Source {
         this.parser.parseHomeSections($, sectionCallback)
     }
 
-    override async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
-        let page = metadata?.page ?? 1
-        if (page == -1) return createPagedResults({ results: [], metadata: { page: -1 } })
-        let url = ''
-        if (homepageSectionId == '2') url = `${this.baseUrl}/?page=${page}&order=update`
-        else if (homepageSectionId == '3') url = `${this.baseUrl}/?page=${page}?status=&type=&order=popular`
-        const request = createRequestObject({
-            url,
-            method: 'GET',
-        })
+    // override async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
+    //     let page = metadata?.page ?? 1
+    //     if (page == -1) return createPagedResults({ results: [], metadata: { page: -1 } })
+    //     let url = ''
+    //     if (homepageSectionId == '2') url = `${this.baseUrl}/?page=${page}&order=update`
+    //     else if (homepageSectionId == '3') url = `${this.baseUrl}/?page=${page}?status=&type=&order=popular`
+    //     const request = createRequestObject({
+    //         url,
+    //         method: 'GET',
+    //     })
 
-        const response = await this.requestManager.schedule(request, this.RETRY)
-        const $ = this.cheerio.load(response.data ?? response['fixedData'])
-        const manga: MangaTile[] = this.parser.parseViewMore($)
+    //     const response = await this.requestManager.schedule(request, this.RETRY)
+    //     const $ = this.cheerio.load(response.data ?? response['fixedData'])
+    //     const manga: MangaTile[] = this.parser.parseViewMore($)
 
-        page++
-        if (manga.length < 10) page = -1
+    //     page++
+    //     if (manga.length < 10) page = -1
 
-        return createPagedResults({
-            results: manga,
-            metadata: { page: page },
-        })
-    }
+    //     return createPagedResults({
+    //         results: manga,
+    //         metadata: { page: page },
+    //     })
+    // }
 }
 
 // xOnlyFadi
