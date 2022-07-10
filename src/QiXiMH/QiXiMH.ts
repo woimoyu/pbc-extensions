@@ -154,6 +154,7 @@ export class QiXiMH extends Source {
         this.parser.parseHomeSections($, sectionCallback)
     }
 
+    //looks like meaningless to QiXiMH
     // override async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
     //     let page = metadata?.page ?? 1
     //     if (page == -1) return createPagedResults({ results: [], metadata: { page: -1 } })
@@ -188,4 +189,4 @@ export interface QXRequestManager extends RequestManagerInfo {
 }
 
 
-//special thanks to Netsky and xOnlyFadi and author of Qiximh.kt from tachiyomi-extensions
+//special thanks to Netsky and xOnlyFadi and author of Qiximh.kt from tachiyomi-extensions.
