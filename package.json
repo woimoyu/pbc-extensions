@@ -4,9 +4,6 @@
   "repositoryName": "pbc-extensions",
   "description": "collection of some Chinese manhua websites for paperback",
   "main": "index.js",
-  "homepage": "https://woimoyu.github.io/",
-  "GITHUB_REPOSITORY": "https://github.com/woimoyu/pbc-extensions",
-  "baseURL": "https://woimoyu.github.io/",
   "scripts": {
     "start": "tsc && node dist/api.js",
     "build": "tsc",
